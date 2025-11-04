@@ -2,19 +2,25 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { JobContext } from "../context/jobContext";
 import { useNavigate } from "react-router-dom";
-import { motion }  from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Briefcase,
   Building,
   MapPin,
   DollarSign,
   FileText,
-  Phone,
+  Mail,
   BadgeCheck,
   ArrowLeft,
   Clock,
   User,
-  Layers
+  Layers,
+  Calendar,
+  Shield,
+  Rocket,
+  Star,
+  Users,
+  Target
 } from "lucide-react";
 
 const JobDetails = () => {
@@ -43,18 +49,40 @@ const JobDetails = () => {
     fetchJob();
   }, [selectedJobId]);
 
+  const getJobTypeColor = (type) => {
+    const colors = {
+      "Full-time": "bg-emerald-100 text-emerald-700 border-emerald-200",
+      "Part-time": "bg-blue-100 text-blue-700 border-blue-200",
+      "Contract": "bg-amber-100 text-amber-700 border-amber-200",
+      "Internship": "bg-purple-100 text-purple-700 border-purple-200",
+      "Remote": "bg-cyan-100 text-cyan-700 border-cyan-200"
+    };
+    return colors[type] || "bg-slate-100 text-slate-700 border-slate-200";
+  };
+
   if (!selectedJobId) {
     return (
-      <div className="max-w-2xl mx-auto mt-20 p-8 text-center">
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-8 rounded-2xl shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">No Job Selected</h2>
-          <p className="text-gray-600 mb-6">Please select a job from the list to view details.</p>
-          <button
-            onClick={() => navigate("/jobs/all-jobs")}
-            className="bg-gradient-to-r from-amber-400 to-yellow-400 text-white px-6 py-2 rounded-lg hover:from-amber-500 hover:to-yellow-500 transition-all shadow-md"
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-20">
+        <div className="max-w-2xl mx-auto p-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white p-12 rounded-3xl shadow-xl border border-slate-100"
           >
-            Browse Available Jobs
-          </button>
+            <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-8">
+              <Briefcase className="w-12 h-12 text-amber-600" />
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">Select an Opportunity</h2>
+            <p className="text-slate-600 mb-8 text-lg max-w-md mx-auto">
+              Choose a job from our curated list to view detailed information and requirements.
+            </p>
+            <button
+              onClick={() => navigate("/jobs/all-jobs")}
+              className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-2xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"
+            >
+              Browse Premium Opportunities
+            </button>
+          </motion.div>
         </div>
       </div>
     );
@@ -62,18 +90,27 @@ const JobDetails = () => {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto mt-20 p-8">
-        <div className="animate-pulse space-y-6">
-          <div className="h-10 bg-gray-200 rounded w-1/2"></div>
-          <div className="space-y-4">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <div className="h-6 w-6 bg-gray-200 rounded-full"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
-            ))}
-          </div>
-          <div className="h-12 bg-gray-200 rounded w-1/3 mt-8"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-20">
+        <div className="max-w-4xl mx-auto p-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-8"
+          >
+            {/* Header Skeleton */}
+            <div className="bg-gradient-to-r from-slate-200 to-slate-300 h-48 rounded-2xl animate-pulse"></div>
+            
+            {/* Content Skeleton */}
+            <div className="space-y-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="space-y-4">
+                  <div className="h-6 bg-slate-200 rounded w-1/4 animate-pulse"></div>
+                  <div className="h-4 bg-slate-200 rounded w-full animate-pulse"></div>
+                  <div className="h-4 bg-slate-200 rounded w-3/4 animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -81,24 +118,33 @@ const JobDetails = () => {
 
   if (error) {
     return (
-      <div className="max-w-2xl mx-auto mt-20 p-8 text-center">
-        <div className="bg-gradient-to-r from-rose-50 to-pink-50 border-l-4 border-rose-400 p-8 rounded-2xl shadow-sm">
-          <h2 className="text-2xl font-bold text-rose-800 mb-4">Error Loading Job</h2>
-          <p className="text-rose-600 mb-6">{error}</p>
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-gradient-to-r from-rose-400 to-pink-400 text-white px-6 py-2 rounded-lg hover:from-rose-500 hover:to-pink-500 transition-all shadow-md"
-            >
-              Try Again
-            </button>
-            <button
-              onClick={() => navigate("/jobs/all-jobs")}
-              className="bg-gray-100 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-200 transition shadow-sm"
-            >
-              Back to Jobs
-            </button>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-20">
+        <div className="max-w-2xl mx-auto p-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white p-12 rounded-3xl shadow-xl border border-slate-100"
+          >
+            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-8">
+              <Shield className="w-12 h-12 text-red-500" />
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">Connection Issue</h2>
+            <p className="text-slate-600 mb-8 text-lg max-w-md mx-auto">{error}</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-2xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => navigate("/jobs/all-jobs")}
+                className="bg-slate-100 text-slate-700 px-8 py-4 rounded-2xl hover:bg-slate-200 transition-all duration-300 font-semibold"
+              >
+                Back to Opportunities
+              </button>
+            </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -107,92 +153,176 @@ const JobDetails = () => {
   if (!job) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="max-w-4xl mx-auto my-10 px-4 sm:px-6 lg:px-8"
-    >
-      <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-        {/* Job Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 sm:p-8 text-white">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{job.title}</h1>
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full text-sm">
-                  <Building size={16} /> {job.company}
-                </span>
-                <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full text-sm">
-                  <MapPin size={16} /> {job.location}
-                </span>
-                <span className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full text-sm">
-                  <Clock size={16} /> {job.jobType}
-                </span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-20">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-12"
+      >
+        {/* Back Button */}
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          onClick={() => navigate("/jobs/all-jobs")}
+          className="flex items-center gap-3 text-slate-600 hover:text-slate-800 transition-colors duration-200 font-semibold mb-8 group"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" />
+          Back to Opportunities
+        </motion.button>
+
+        {/* Main Card */}
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+          {/* Job Header */}
+          <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 p-8 md:p-12 text-white relative overflow-hidden">
+            {/* Background Elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl transform translate-x-32 -translate-y-32"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl transform -translate-x-32 translate-y-32"></div>
+            
+            <div className="relative z-10">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div className="flex-1">
+                  <motion.h1 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="text-3xl md:text-4xl font-bold mb-4 leading-tight"
+                  >
+                    {job.title}
+                  </motion.h1>
+                  
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex flex-wrap items-center gap-3 mb-6"
+                  >
+                    <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-2xl text-sm font-medium">
+                      <Building className="w-4 h-4" />
+                      {job.company}
+                    </span>
+                    <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-2xl text-sm font-medium">
+                      <MapPin className="w-4 h-4" />
+                      {job.location || "Remote"}
+                    </span>
+                    <span className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-medium border ${getJobTypeColor(job.jobType)}`}>
+                      <Clock className="w-4 h-4" />
+                      {job.jobType}
+                    </span>
+                  </motion.div>
+                </div>
+
+                {job.salary && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-6 py-4 rounded-2xl shadow-2xl min-w-[200px] text-center"
+                  >
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <DollarSign className="w-5 h-5" />
+                      <span className="text-2xl font-bold">${job.salary.toLocaleString()}</span>
+                    </div>
+                    <div className="text-amber-100 text-sm font-medium">Annual Salary</div>
+                  </motion.div>
+                )}
               </div>
             </div>
-            {job.salary && (
-              <div className="bg-white text-purple-700 px-4 py-2 rounded-lg font-bold text-lg">
-                ${job.salary.toLocaleString()}
+          </div>
+
+          {/* Job Content */}
+          <div className="p-8 md:p-12 space-y-12">
+            {/* Overview Section */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-100 rounded-xl">
+                  <BadgeCheck className="w-6 h-6 text-amber-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900">Opportunity Overview</h2>
               </div>
-            )}
+              <p className="text-slate-700 leading-relaxed text-lg">{job.description}</p>
+            </motion.section>
+
+            {/* Requirements Section */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-xl">
+                  <Target className="w-6 h-6 text-blue-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900">Requirements & Qualifications</h2>
+              </div>
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                <p className="text-slate-700 leading-relaxed whitespace-pre-line">{job.requirements}</p>
+              </div>
+            </motion.section>
+
+            {/* Additional Information Grid */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+            >
+              {/* Responsibilities */}
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-purple-100 rounded-xl">
+                    <Layers className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-lg">Key Responsibilities</h3>
+                </div>
+                <p className="text-slate-700 leading-relaxed">{job.responsibilities || "Responsibilities will be discussed during the interview process."}</p>
+              </div>
+
+              {/* Contact Information */}
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-green-100 rounded-xl">
+                    <Mail className="w-5 h-5 text-green-600" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-lg">Application Process</h3>
+                </div>
+                <div className="space-y-3">
+                  <p className="text-slate-700">
+                    <strong>Contact:</strong> {job.contact || "HR Department"}
+                  </p>
+                  <p className="text-slate-600 text-sm">
+                    Submit your application including resume and cover letter for consideration.
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+
+            {/* Quick Apply Section */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="text-center pt-8"
+            >
+              <button className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-12 py-4 rounded-2xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-2xl hover:shadow-3xl font-semibold text-lg flex items-center justify-center gap-3 mx-auto group">
+                <Rocket className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                Apply for This Opportunity
+              </button>
+              <p className="text-slate-500 text-sm mt-4">
+                Join thousands of professionals who found their dream roles through our platform
+              </p>
+            </motion.section>
           </div>
         </div>
-
-        {/* Job Content */}
-        <div className="p-6 sm:p-8 space-y-8">
-          {/* Overview Section */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <BadgeCheck className="text-purple-600" size={20} />
-              Job Overview
-            </h2>
-            <p className="text-gray-700 leading-relaxed">{job.description}</p>
-          </div>
-
-          {/* Requirements Section */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <User className="text-purple-600" size={20} />
-              Requirements
-            </h2>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700 whitespace-pre-line">{job.requirements}</p>
-            </div>
-          </div>
-
-          {/* Additional Info */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
-                <Layers className="text-purple-600" size={18} />
-                Responsibilities
-              </h3>
-              <p className="text-gray-700 text-sm">{job.responsibilities|| "Not specified"}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
-                <Phone className="text-purple-600" size={18} />
-                Contact Information
-              </h3>
-              <p className="text-gray-700 text-sm">{job.contact || "Contact HR department"}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center">
-          <button
-            onClick={() => navigate("/jobs/all-jobs")}
-            className="flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors font-medium"
-          >
-            <ArrowLeft size={18} />
-            Back to Jobs List
-          </button>
-          
-        </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
 

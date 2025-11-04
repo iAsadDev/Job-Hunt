@@ -1,6 +1,8 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -15,181 +17,125 @@ const Navbar = () => {
   if (isLoading) return null;
 
   return (
-    <nav className="bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/" className="text-white text-2xl font-bold flex items-center">
-            <span className="bg-white text-indigo-600 px-2 py-1 rounded mr-1">Job</span>
-            <span className="text-yellow-300">Hunt</span>
-          </Link>
+    <nav className="sticky top-0 z-50 backdrop-blur-xl bg-gray-900/70 border-b border-gray-800 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 flex justify-between items-center h-16">
+        {/* Logo */}
+        <Link
+          to="/"
+          className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 tracking-tight"
+        >
+          Job<span className="text-white">Hunt</span>
+        </Link>
 
-          <div className="hidden md:flex space-x-6 items-center">
-            <Link 
-              to="/" 
-              className="text-white hover:text-yellow-300 transition-colors duration-300 font-medium"
-            >
-              Home
-            </Link>
-
-            <Link 
-              to="/jobs/all-jobs" 
-              className="text-white hover:text-yellow-300 transition-colors duration-300 font-medium"
-            >
-              Jobs List
-            </Link>
-            
-            <Link 
-              to="/jobs/create" 
-              className="text-white hover:text-yellow-300 transition-colors duration-300 font-medium"
-            >
-              Create Job
-            </Link>
-            
-            <Link 
-              to="/jobs/my-jobs"  
-              className="text-white hover:text-yellow-300 transition-colors duration-300 font-medium"
-            >
-              My Jobs
-            </Link>
-
-            <Link 
-              to="/about" 
-              className="text-white hover:text-yellow-300 transition-colors duration-300 font-medium"
-            >
-              About
-            </Link>
-            
-
-            {isAuthenticated ? (
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 font-semibold"
-              >
-                Logout
-              </button>
-            ) : (
-              <div className="flex space-x-4">
-                <Link to="/login">
-                  <button className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 font-semibold">
-                    Login
-                  </button>
-                </Link>
-                <Link to="/register">
-                  <button className="bg-white hover:bg-gray-100 text-indigo-600 px-4 py-2 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 font-semibold">
-                    Register
-                  </button>
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setOpen(!open)}
-              className="text-white focus:outline-none"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                {open ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      {open && (
-        <div className="md:hidden px-4 pb-4 space-y-3 bg-indigo-700">
-          <Link 
-            to="/" 
-            className="block text-white hover:text-yellow-300 py-2 border-b border-indigo-500 transition-colors duration-300"
-            onClick={() => setOpen(false)}
-          >
-            Home
-          </Link>
-          
-          <Link
-            to="/jobs/all-jobs"
-            className="block text-white hover:text-yellow-300 py-2 border-b border-indigo-500 transition-colors duration-300"
-            onClick={() => setOpen(false)}
-          >
-            Jobs List
-          </Link>
-          
-          <Link
-            to="/jobs/create"
-            className="block text-white hover:text-yellow-300 py-2 border-b border-indigo-500 transition-colors duration-300"
-            onClick={() => setOpen(false)}
-          >
-            Create Job
-          </Link>
-          
-          <Link 
-            to="/jobs/my-jobs"  
-            className="block text-white hover:text-yellow-300 py-2 border-b border-indigo-500 transition-colors duration-300"
-            onClick={() => setOpen(false)}
-          >
-            My Jobs
-          </Link>
-
-          <Link 
-            to="/about" 
-            className="block text-white hover:text-yellow-300 py-2 border-b border-indigo-500 transition-colors duration-300"
-            onClick={() => setOpen(false)}
-          >
-            About
-          </Link>
-         
+        {/* Desktop Menu */}
+        <div className="hidden md:flex items-center space-x-8">
+          <NavLink to="/" label="Home" />
+          <NavLink to="/jobs/all-jobs" label="Jobs" />
+          <NavLink to="/jobs/create" label="Create" />
+          <NavLink to="/jobs/my-jobs" label="My Jobs" />
+          <NavLink to="/about" label="About" />
 
           {isAuthenticated ? (
             <button
               onClick={handleLogout}
-              className="w-full text-left text-white hover:text-yellow-300 py-2 font-semibold transition-colors duration-300"
+              className="bg-gradient-to-r from-red-500 to-pink-600 hover:opacity-90 px-5 py-2 rounded-lg font-semibold text-white transition-transform duration-200 hover:scale-105"
             >
               Logout
             </button>
           ) : (
-            <div className="pt-2 space-y-3">
-              <Link 
-                to="/login" 
-                className="block bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-center py-2 rounded-lg font-semibold transition-colors duration-300"
-                onClick={() => setOpen(false)}
+            <div className="flex items-center space-x-4">
+              <Link
+                to="/login"
+                className="bg-gradient-to-r from-cyan-400 to-blue-500 text-white px-5 py-2 rounded-lg font-semibold transition-transform duration-200 hover:scale-105"
               >
                 Login
               </Link>
-              
-              <Link 
-                to="/register" 
-                className="block bg-white hover:bg-gray-100 text-indigo-600 text-center py-2 rounded-lg font-semibold transition-colors duration-300"
-                onClick={() => setOpen(false)}
+              <Link
+                to="/register"
+                className="bg-white text-gray-900 px-5 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-transform duration-200 hover:scale-105"
               >
                 Register
               </Link>
             </div>
           )}
         </div>
-      )}
+
+        {/* Mobile Button */}
+        <button
+          onClick={() => setOpen(!open)}
+          className="md:hidden text-white focus:outline-none"
+        >
+          {open ? <X size={26} /> : <Menu size={26} />}
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="md:hidden bg-gray-900/95 border-t border-gray-800 px-5 pb-5 space-y-4 text-white"
+          >
+            <MobileLink setOpen={setOpen} to="/" label="Home" />
+            <MobileLink setOpen={setOpen} to="/jobs/all-jobs" label="Jobs" />
+            <MobileLink setOpen={setOpen} to="/jobs/create" label="Create Job" />
+            <MobileLink setOpen={setOpen} to="/jobs/my-jobs" label="My Jobs" />
+            <MobileLink setOpen={setOpen} to="/about" label="About" />
+
+            {isAuthenticated ? (
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setOpen(false);
+                }}
+                className="w-full bg-gradient-to-r from-red-500 to-pink-600 py-2 rounded-lg font-semibold mt-2"
+              >
+                Logout
+              </button>
+            ) : (
+              <div className="pt-2 space-y-3">
+                <Link
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                  className="block bg-gradient-to-r from-cyan-400 to-blue-500 text-center py-2 rounded-lg font-semibold"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setOpen(false)}
+                  className="block bg-white text-gray-900 text-center py-2 rounded-lg font-semibold"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
+
+const NavLink = ({ to, label }) => (
+  <Link
+    to={to}
+    className="text-gray-200 hover:text-cyan-400 font-medium transition-all duration-300"
+  >
+    {label}
+  </Link>
+);
+
+const MobileLink = ({ to, label, setOpen }) => (
+  <Link
+    to={to}
+    onClick={() => setOpen(false)}
+    className="block text-gray-200 hover:text-cyan-400 border-b border-gray-800 pb-2"
+  >
+    {label}
+  </Link>
+);
 
 export default Navbar;

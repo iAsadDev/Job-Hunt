@@ -5,6 +5,17 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { 
+  FaSearch, 
+  FaMapMarkerAlt, 
+  FaBriefcase, 
+  FaDollarSign,
+  FaFilter,
+  FaTimes,
+  FaBuilding,
+  FaClock,
+  FaRocket
+} from "react-icons/fa";
 import Footer from "./footer";
 
 const JobsList = () => {
@@ -15,6 +26,8 @@ const JobsList = () => {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState("All");
+  const [salaryRange, setSalaryRange] = useState("All");
+  const [showFilters, setShowFilters] = useState(false);
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
@@ -50,7 +63,28 @@ const JobsList = () => {
                          job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          job.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = selectedType === "All" || job.jobType === selectedType;
-    return matchesSearch && matchesType;
+    
+    let matchesSalary = true;
+    if (salaryRange !== "All" && job.salary) {
+      switch(salaryRange) {
+        case "0-50k":
+          matchesSalary = job.salary <= 50000;
+          break;
+        case "50k-100k":
+          matchesSalary = job.salary > 50000 && job.salary <= 100000;
+          break;
+        case "100k-150k":
+          matchesSalary = job.salary > 100000 && job.salary <= 150000;
+          break;
+        case "150k+":
+          matchesSalary = job.salary > 150000;
+          break;
+        default:
+          matchesSalary = true;
+      }
+    }
+    
+    return matchesSearch && matchesType && matchesSalary;
   });
 
   // Animation variants
@@ -69,242 +103,348 @@ const JobsList = () => {
     show: { opacity: 1, y: 0 }
   };
 
+  const getSalaryRange = (salary) => {
+    if (!salary) return "Not specified";
+    if (salary < 50000) return `$${(salary/1000).toFixed(0)}k`;
+    if (salary < 100000) return `$${(salary/1000).toFixed(0)}k`;
+    return `$${Math.round(salary/1000)}k`;
+  };
+
+  const getJobTypeColor = (type) => {
+    const colors = {
+      "Full-time": "bg-emerald-100 text-emerald-700",
+      "Part-time": "bg-blue-100 text-blue-700",
+      "Contract": "bg-amber-100 text-amber-700",
+      "Internship": "bg-purple-100 text-purple-700",
+      "Remote": "bg-cyan-100 text-cyan-700"
+    };
+    return colors[type] || "bg-gray-100 text-gray-700";
+  };
+
   if (error) {
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="max-w-6xl mx-auto px-4 py-12 text-center"
-      >
-        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="max-w-4xl mx-auto px-4 py-12 text-center"
+        >
+          <div className="bg-white p-12 rounded-3xl shadow-xl border border-slate-100">
+            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-8">
+              <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-3xl font-bold text-slate-900 mb-4">Connection Issue</h3>
+            <p className="text-slate-600 mb-8 text-lg max-w-md mx-auto">{error}</p>
+            <button
+              onClick={fetchJobs}
+              className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-2xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"
+            >
+              Try Again
+            </button>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">Error Loading Jobs</h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">{error}</p>
-          <button
-            onClick={fetchJobs}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-          >
-            Retry
-          </button>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <Skeleton width={300} height={40} className="mx-auto mb-4" />
-          <Skeleton width={400} height={24} className="mx-auto" />
-        </div>
-        <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <Skeleton height={28} className="mb-4" />
-              <Skeleton width={120} height={24} className="mb-6" />
-              <Skeleton count={3} className="mb-2" />
-              <Skeleton height={48} className="mt-6 rounded-lg" />
-            </div>
-          ))}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-20">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="text-center mb-16">
+            <Skeleton width={400} height={52} className="mx-auto mb-6 rounded-2xl" />
+            <Skeleton width={500} height={28} className="mx-auto rounded-2xl" />
+          </div>
+          <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
+                <Skeleton height={32} className="mb-4 rounded-xl" />
+                <Skeleton width={140} height={24} className="mb-6 rounded-xl" />
+                <Skeleton count={3} className="mb-2 rounded" />
+                <Skeleton height={52} className="mt-6 rounded-xl" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
-  if (filteredJobs.length === 0 && (searchTerm || selectedType !== "All")) {
+  if (filteredJobs.length === 0 && (searchTerm || selectedType !== "All" || salaryRange !== "All")) {
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="max-w-6xl mx-auto px-4 py-12 text-center"
-      >
-        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-20">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="max-w-4xl mx-auto px-4 py-12 text-center"
+        >
+          <div className="bg-white p-12 rounded-3xl shadow-xl border border-slate-100">
+            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8">
+              <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-3xl font-bold text-slate-900 mb-4">No Matching Jobs Found</h3>
+            <p className="text-slate-600 mb-8 text-lg max-w-md mx-auto">
+              {searchTerm 
+                ? `No jobs match "${searchTerm}"`
+                : `No ${selectedType.toLowerCase()} jobs available with current filters`}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedType("All");
+                  setSalaryRange("All");
+                }}
+                className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-2xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"
+              >
+                Clear All Filters
+              </button>
+              <button
+                onClick={() => setShowFilters(true)}
+                className="bg-slate-100 text-slate-700 px-8 py-4 rounded-2xl hover:bg-slate-200 transition-all duration-300 font-semibold"
+              >
+                Adjust Filters
+              </button>
+            </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">No Jobs Found</h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            {searchTerm 
-              ? `No jobs match "${searchTerm}"`
-              : `No ${selectedType.toLowerCase()} jobs available`}
-          </p>
-          <button
-            onClick={() => {
-              setSearchTerm("");
-              setSelectedType("All");
-            }}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-          >
-            Clear Filters
-          </button>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     );
   }
 
   if (jobs.length === 0) {
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="max-w-6xl mx-auto px-4 py-12 text-center"
-      >
-        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-20">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="max-w-4xl mx-auto px-4 py-12 text-center"
+        >
+          <div className="bg-white p-12 rounded-3xl shadow-xl border border-slate-100">
+            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8">
+              <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-3xl font-bold text-slate-900 mb-4">No Jobs Available</h3>
+            <p className="text-slate-600 mb-8 text-lg max-w-md mx-auto">
+              We're currently updating our job listings. Please check back soon for new opportunities.
+            </p>
+            <button
+              onClick={fetchJobs}
+              className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-2xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"
+            >
+              Refresh Jobs
+            </button>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">No Jobs Available</h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">We couldn't find any job listings matching your criteria.</p>
-          <button
-            onClick={fetchJobs}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-          >
-            Refresh Jobs
-          </button>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     );
   }
 
   return (
     <>
-      <motion.div 
-        initial="hidden"
-        animate="show"
-        variants={container}
-        className="max-w-7xl mx-auto px-4 py-12"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Find Your <span className="text-blue-600">Dream Job</span>
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Browse through our latest job openings and take the next step in your career
-          </p>
-        </motion.div>
-
-        {/* Search and Filter Section */}
-        <div className="mb-10 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Search jobs by title, company or keywords"
-                className="pl-10 w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <select
-              className="py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-            >
-              <option value="All">All Types</option>
-              <option value="Full-time">Full-time</option>
-              <option value="Part-time">Part-time</option>
-              <option value="Contract">Contract</option>
-              <option value="Internship">Internship</option>
-              <option value="Remote">Remote</option>
-            </select>
-          </div>
-          <div className="mt-4 text-sm text-gray-500">
-            Showing {filteredJobs.length} of {jobs.length} jobs
-          </div>
-        </div>
-        
-        {/* Jobs Grid */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 pt-20">
         <motion.div 
+          initial="hidden"
+          animate="show"
           variants={container}
-          className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          className="max-w-7xl mx-auto px-4 py-12"
         >
-          {filteredJobs.map((job) => (
-            <motion.div
-              key={job._id}
-              variants={item}
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col h-full"
-            >
-              <div className="p-6 flex-1">
-                <div className="flex items-start mb-4">
-                  {job.logo && (
-                    <img 
-                      src={job.logo} 
-                      alt={job.company} 
-                      className="w-12 h-12 object-contain rounded-lg border border-gray-200 p-1 bg-white mr-4"
-                    />
-                  )}
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">{job.title}</h3>
-                    <p className="text-blue-600 font-medium">{job.company}</p>
-                  </div>
+          {/* Header Section */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-16"
+          >
+            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
+              Discover Your <span className="bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">Next Opportunity</span>
+            </h1>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+              Browse through our curated selection of premium job opportunities from top companies
+            </p>
+          </motion.div>
+
+          {/* Search and Filter Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-12 bg-white p-8 rounded-3xl shadow-xl border border-slate-100"
+          >
+            <div className="flex flex-col lg:flex-row gap-6 mb-6">
+              <div className="flex-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <FaSearch className="w-5 h-5 text-slate-400" />
                 </div>
-                
-                <p className="text-gray-600 mb-5 line-clamp-3">{job.description}</p>
-                
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-gray-700">
-                    <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    {job.location || "Remote"}
-                  </div>
-                  
-                  <div className="flex items-center text-gray-700">
-                    <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    {job.jobType || "Full-time"}
-                  </div>
-                  
-                  {job.salary && (
-                    <div className="flex items-center text-gray-700">
-                      <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      ${job.salary.toLocaleString()}
-                    </div>
-                  )}
-                </div>
+                <input
+                  type="text"
+                  placeholder="Search by job title, company, or keywords..."
+                  className="pl-12 w-full py-4 px-4 border border-slate-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-slate-700 placeholder-slate-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
               
-              <div className="px-6 pb-6">
-                <button
-                  onClick={() => {
-                    onSelectJob(job._id);
-                    navigate(`/jobs/${job._id}`);
-                  }}
-                  className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
+              <div className="flex flex-col sm:flex-row gap-4">
+                <select
+                  className="py-4 px-4 border border-slate-300 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-slate-700 bg-white"
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
                 >
-                  View Details
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
+                  <option value="All">All Job Types</option>
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Internship">Internship</option>
+                  <option value="Remote">Remote</option>
+                </select>
+
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="bg-slate-100 text-slate-700 py-4 px-6 rounded-2xl hover:bg-slate-200 transition-all duration-300 font-semibold flex items-center gap-2"
+                >
+                  <FaFilter className="w-4 h-4" />
+                  More Filters
                 </button>
               </div>
-            </motion.div>
-          ))}
+            </div>
+
+            {/* Expanded Filters */}
+            {showFilters && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="pt-6 border-t border-slate-200"
+              >
+                <div className="flex flex-col sm:flex-row gap-6 items-center">
+                  <label className="text-slate-700 font-semibold">Salary Range:</label>
+                  <select
+                    className="py-3 px-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-slate-700 bg-white flex-1"
+                    value={salaryRange}
+                    onChange={(e) => setSalaryRange(e.target.value)}
+                  >
+                    <option value="All">All Salary Ranges</option>
+                    <option value="0-50k">$0 - $50k</option>
+                    <option value="50k-100k">$50k - $100k</option>
+                    <option value="100k-150k">$100k - $150k</option>
+                    <option value="150k+">$150k+</option>
+                  </select>
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="text-slate-500 hover:text-slate-700 transition-colors"
+                  >
+                    <FaTimes className="w-5 h-5" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            <div className="flex justify-between items-center mt-4">
+              <div className="text-slate-600 font-medium">
+                Showing <span className="text-amber-600 font-bold">{filteredJobs.length}</span> of{" "}
+                <span className="text-slate-700 font-bold">{jobs.length}</span> opportunities
+              </div>
+              {(searchTerm || selectedType !== "All" || salaryRange !== "All") && (
+                <button
+                  onClick={() => {
+                    setSearchTerm("");
+                    setSelectedType("All");
+                    setSalaryRange("All");
+                  }}
+                  className="text-amber-600 hover:text-amber-700 font-semibold text-sm"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+          </motion.div>
+          
+          {/* Jobs Grid */}
+          <motion.div 
+            variants={container}
+            className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {filteredJobs.map((job) => (
+              <motion.div
+                key={job._id}
+                variants={item}
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100 flex flex-col h-full group"
+              >
+                <div className="p-8 flex-1">
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-start space-x-4">
+                      {job.logo && (
+                        <img 
+                          src={job.logo} 
+                          alt={job.company} 
+                          className="w-14 h-14 object-contain rounded-xl border border-slate-200 p-2 bg-white group-hover:scale-110 transition-transform duration-300"
+                        />
+                      )}
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-amber-600 transition-colors duration-300">{job.title}</h3>
+                        <div className="flex items-center text-slate-600 font-medium">
+                          <FaBuilding className="w-4 h-4 mr-2" />
+                          {job.company}
+                        </div>
+                      </div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getJobTypeColor(job.jobType)}`}>
+                      {job.jobType}
+                    </span>
+                  </div>
+                  
+                  <p className="text-slate-600 mb-6 line-clamp-3 leading-relaxed">{job.description}</p>
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center text-slate-700">
+                      <FaMapMarkerAlt className="w-4 h-4 text-slate-500 mr-3" />
+                      {job.location || "Remote"}
+                    </div>
+                    
+                    <div className="flex items-center text-slate-700">
+                      <FaBriefcase className="w-4 h-4 text-slate-500 mr-3" />
+                      {job.jobType || "Full-time"}
+                    </div>
+                    
+                    {job.salary && (
+                      <div className="flex items-center text-slate-700">
+                        <FaDollarSign className="w-4 h-4 text-slate-500 mr-3" />
+                        {getSalaryRange(job.salary)} per year
+                      </div>
+                    )}
+
+                    {job.postedAt && (
+                      <div className="flex items-center text-slate-500 text-sm">
+                        <FaClock className="w-4 h-4 mr-3" />
+                        Posted {new Date(job.postedAt).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="px-8 pb-8 pt-6 bg-slate-50 border-t border-slate-100">
+                  <button
+                    onClick={() => {
+                      onSelectJob(job._id);
+                      navigate(`/jobs/${job._id}`);
+                    }}
+                    className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white py-4 px-6 rounded-2xl hover:from-amber-600 hover:to-amber-700 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl flex items-center justify-center group/btn"
+                  >
+                    <FaRocket className="w-4 h-4 mr-3 group-hover/btn:translate-x-1 transition-transform duration-300" />
+                    View Opportunity
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
       <Footer />
     </>
   );

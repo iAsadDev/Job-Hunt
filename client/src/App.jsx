@@ -32,7 +32,7 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <Home />
-              </ProtectedRoute>
+               </ProtectedRoute>
             }
           />
 
@@ -42,7 +42,7 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <JobsList />
-              </ProtectedRoute>
+               </ProtectedRoute>
             }
           />
           <Route
@@ -61,7 +61,13 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route path="/jobs/my-jobs" element={<ProtectedRoute><MyJobs /></ProtectedRoute>}></Route>
+          <Route path="/jobs/my-jobs" element={
+            <ProtectedRoute>
+            <MyJobs />
+            </ProtectedRoute>
+            }>
+
+            </Route>
           <Route
   path="/jobs/edit/:id"
   element={

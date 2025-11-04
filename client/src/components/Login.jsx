@@ -1,8 +1,10 @@
 import React, { useState, useContext } from "react";
 import axios from "axios";
 import { setToken } from "../utils/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
+import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -21,75 +23,103 @@ const Login = () => {
     setError("");
 
     try {
-      const res = await axios.post("http://localhost:4000/api/auth/login", form);
+      const res = await axios.post(
+        "http://localhost:4000/api/auth/login",
+        form
+      );
       setToken(res.data.token);
       loginSuccess();
       navigate("/");
     } catch (err) {
       setError("Invalid email or password");
-      console.log(err)
+      console.log(err);
     } finally {
       setLoad(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-pink-500 to-indigo-600 px-4">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/30 rounded-3xl shadow-2xl p-8 md:p-10 text-white transition-all duration-300">
-        <h2 className="text-3xl font-bold text-center mb-6 drop-shadow-sm">
-          Welcome Back ✨
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md bg-gray-900/80 backdrop-blur-xl border border-gray-700 rounded-3xl shadow-[0_0_25px_rgba(0,0,0,0.6)] p-8 md:p-10"
+      >
+        <h2 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-cyan-400 to-blue-500 text-transparent bg-clip-text">
+          Sign In
         </h2>
 
         {error && (
-          <div className="bg-red-200 text-red-800 p-3 rounded-lg mb-4 text-sm text-center font-medium">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-500/20 text-red-300 p-3 rounded-lg mb-6 text-sm text-center font-medium border border-red-400/30"
+          >
             {error}
-          </div>
+          </motion.div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block mb-1 font-medium">Email</label>
+            <label className="block mb-2 font-medium text-gray-300">
+              Email Address
+            </label>
             <input
               name="email"
               type="email"
               placeholder="you@example.com"
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white transition"
+              className="w-full px-4 py-3 rounded-xl bg-gray-800 text-gray-100 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300"
             />
           </div>
+
           <div>
-            <label className="block mb-1 font-medium">Password</label>
+            <label className="block mb-2 font-medium text-gray-300">
+              Password
+            </label>
             <input
               name="password"
               type="password"
               placeholder="••••••••"
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white transition"
+              className="w-full px-4 py-3 rounded-xl bg-gray-800 text-gray-100 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300"
             />
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             type="submit"
-            className={`w-full py-3 rounded-xl font-semibold text-lg transition-all duration-300 ${
-              load
-                ? "bg-white/30 text-white cursor-not-allowed"
-                : "bg-white text-indigo-600 hover:bg-indigo-100"
-            }`}
             disabled={load}
+            className={`w-full py-3 rounded-xl font-semibold text-lg flex justify-center items-center transition-all duration-300 ${
+              load
+                ? "bg-cyan-500/40 text-white/70 cursor-not-allowed"
+                : "bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white shadow-lg shadow-cyan-500/20"
+            }`}
           >
-            {load ? "Signing in..." : "Login"}
-          </button>
+            {load ? (
+              <>
+                <Loader2 className="animate-spin mr-2 h-5 w-5" /> Signing in...
+              </>
+            ) : (
+              "Login"
+            )}
+          </motion.button>
         </form>
 
-        <p className="text-sm text-white/80 text-center mt-6">
+        <p className="text-sm text-gray-400 text-center mt-8">
           Don’t have an account?{" "}
-          <a href="/register" className="text-white font-medium underline hover:text-indigo-100">
+          <Link
+            to="/register"
+            className="text-cyan-400 font-semibold hover:text-cyan-300 transition"
+          >
             Register
-          </a>
+          </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 };

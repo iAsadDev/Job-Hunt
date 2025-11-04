@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { setToken } from "../utils/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
+  const [load, setLoad] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) =>
@@ -13,76 +16,113 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    setError("");
+    setLoad(true);
+
     try {
-      const res = await axios.post(`http://localhost:4000/api/auth/register`, form);
+      const res = await axios.post(
+        `http://localhost:4000/api/auth/register`,
+        form
+      );
       setToken(res.data.token);
       navigate("/login");
-
     } catch (err) {
       console.error("Registration error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "User Already exists");
+      setError(err.response?.data?.message || "User already exists");
+    } finally {
+      setLoad(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-md">
-        <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
-          Create an Account
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md bg-gray-900/80 backdrop-blur-xl border border-gray-700 rounded-3xl shadow-[0_0_25px_rgba(0,0,0,0.6)] p-8 md:p-10"
+      >
+        <h2 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-cyan-400 to-blue-500 text-transparent bg-clip-text">
+          Create Account
         </h2>
+
         {error && (
-          <div className="bg-red-100 text-red-600 p-3 rounded mb-4 text-sm text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-500/20 text-red-300 p-3 rounded-lg mb-6 text-sm text-center font-medium border border-red-400/30"
+          >
             {error}
-          </div>
+          </motion.div>
         )}
-        <form onSubmit={handleSubmit} className="space-y-5">
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block mb-1 font-medium text-gray-700">Name</label>
+            <label className="block mb-2 font-medium text-gray-300">Name</label>
             <input
               name="name"
               placeholder="John Doe"
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-xl bg-gray-800 text-gray-100 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300"
             />
           </div>
+
           <div>
-            <label className="block mb-1 font-medium text-gray-700">Email</label>
+            <label className="block mb-2 font-medium text-gray-300">Email</label>
             <input
               name="email"
               type="email"
               placeholder="example@mail.com"
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-xl bg-gray-800 text-gray-100 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300"
             />
           </div>
+
           <div>
-            <label className="block mb-1 font-medium text-gray-700">Password</label>
+            <label className="block mb-2 font-medium text-gray-300">Password</label>
             <input
               name="password"
               type="password"
               placeholder="••••••••"
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-xl bg-gray-800 text-gray-100 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300"
             />
           </div>
-          <button
+
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            disabled={load}
+            className={`w-full py-3 rounded-xl font-semibold text-lg flex justify-center items-center transition-all duration-300 ${
+              load
+                ? "bg-cyan-500/40 text-white/70 cursor-not-allowed"
+                : "bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white shadow-lg shadow-cyan-500/20"
+            }`}
           >
-            Register
-          </button>
+            {load ? (
+              <>
+                <Loader2 className="animate-spin mr-2 h-5 w-5" /> Creating...
+              </>
+            ) : (
+              "Register"
+            )}
+          </motion.button>
         </form>
-        <p className="text-sm text-gray-600 text-center mt-4">
+
+        <p className="text-sm text-gray-400 text-center mt-8">
           Already have an account?{" "}
-          <a href="/login" className="text-blue-600 hover:underline">
+          <Link
+            to="/login"
+            className="text-cyan-400 font-semibold hover:text-cyan-300 transition"
+          >
             Login
-          </a>
+          </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 };
